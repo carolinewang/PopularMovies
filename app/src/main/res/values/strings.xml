@@ -1,0 +1,15 @@
+<resources>
+	<string name="app_name">Pop Movies</string>
+
+	<string name="hello_world">Hello world!</string>
+	<string name="action_settings">Settings</string>
+	<string name="action_refresh">Refresh</string>
+	<string name="toast_no_internet">No Internet connection. Please turn on the Internet and reopen the app.</string>
+	<string name="api_key">INSERT MY API KEY HERE</string>
+
+	<string-array name="sort_criteria">
+		<item>Most Popular</item>
+		<item>Highest Rated</item>
+	</string-array>
+	<string name="title_activity_movie_detail">MovieDetail</string>
+</resources>

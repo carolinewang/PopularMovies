@@ -32,7 +32,6 @@ public class MovieDetail extends ActionBarActivity {
 	private TextView plot;
 	private TextView rating;
 	private RatingBar ratingBar;
-	private String movieInfoJsonStr;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,17 +87,15 @@ public class MovieDetail extends ActionBarActivity {
 			BufferedReader reader = null;
 
 // Will contain the raw JSON response as a string.
-//			String movieInfoJsonStr = null;
+			String movieInfoJsonStr = null;
 //			String sortBy = "popularity.desc";
-			final String API_KEY = "81cdc16066eb01e599562bc01d19e5a4";
-
 			try {
 
 				final String BASE_URL = "http://api.themoviedb.org/3/movie/";
 				final String API = "api_key";
 				Uri builtUri = Uri.parse(BASE_URL).buildUpon()
 						.appendPath(String.valueOf(params[0]))
-						.appendQueryParameter(API, API_KEY)
+						.appendQueryParameter(API, getString(R.string.api_key))
 						.build();
 				URL url = new URL(builtUri.toString());
 				Log.v(LOG_TAG, "Built URI " + builtUri.toString());
