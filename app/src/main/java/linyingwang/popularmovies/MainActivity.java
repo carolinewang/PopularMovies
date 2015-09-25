@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,10 +14,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -35,6 +38,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.transform.Result;
@@ -44,6 +48,7 @@ public class MainActivity extends ActionBarActivity {
 	public final static String DISCOVER ="discover/movie";
 	public final static String TOP_RATED ="movie/top_rated";
 	public final static String SORT_POPULARITY ="popularity.desc";
+
 //	public final static String SORT_RATING ="vote_average.desc";
 
 	protected boolean isOnline;
@@ -51,20 +56,20 @@ public class MainActivity extends ActionBarActivity {
 	public String[] posterPaths;
 	public ImageAdapter imageAdapter;
 	private GridView gridview;
+	private int page = 1;
+	private int sortCriteria;
 	public ArrayList<Movie> movies = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.d("Main Activity", "OnCreate");
 		setContentView(R.layout.activity_main);
 		gridview = (GridView) findViewById(R.id.gridview);
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
+		imageAdapter = new ImageAdapter(movies);
+		gridview.setAdapter(imageAdapter);
 		if (isOnline()) {
-			loadSpinner();
+			loadSpinner(page);
 			gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				public void onItemClick(AdapterView<?> parent, View v,
 				                        int position, long id) {
@@ -79,6 +84,57 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.menu_main, menu);
+//		MenuItem item = menu.findItem(R.id.spinner);
+//		Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
+////		spinner.setAdapter(adapter); // set the adapter to provide layout of rows and content
+////		s.setOnItemSelectedListener(onItemSelectedListener);
+//		loadSpinner(page, spinner);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == R.id.action_load_more) {
+			loadMoreMovies();
+			return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.d("Main Activity", "OnResume");
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.d("Main Activity", "OnPause");
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.d("Main Activity", "OnStop");
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.d("Main Activity", "OnRestart");
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.d("Main Activity", "OnDestroy");
+	}
 
 	public boolean isOnline() {
 		ConnectivityManager connMgr = (ConnectivityManager)
@@ -88,7 +144,7 @@ public class MainActivity extends ActionBarActivity {
 		return isOnline;
 	}
 
-	public void loadSpinner() {
+	public void loadSpinner(final int p) {
 		Spinner spinner = (Spinner) findViewById(R.id.spinner);
 // Create an ArrayAdapter using the string array and a default spinner layout
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -102,16 +158,23 @@ public class MainActivity extends ActionBarActivity {
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				switch (position) {
 					case 0:
+						sortCriteria = 0;
+						page = 1;
+						movies.clear();
 						FetchMovieTask fetchMovieTask = new FetchMovieTask();
-						fetchMovieTask.execute(DISCOVER,SORT_POPULARITY);
+						fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(p));
 						break;
 					case 1:
+						sortCriteria = 1;
+						page = 1;
+						movies.clear();
 						FetchMovieTask fetchMovie = new FetchMovieTask();
-						fetchMovie.execute(TOP_RATED);
+						fetchMovie.execute(TOP_RATED,String.valueOf(p));
 						break;
 					default:
+						sortCriteria =1;
 						FetchMovieTask fetch = new FetchMovieTask();
-						fetch.execute(DISCOVER,SORT_POPULARITY);
+						fetch.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
 				}
 			}
 
@@ -119,6 +182,21 @@ public class MainActivity extends ActionBarActivity {
 			public void onNothingSelected(AdapterView<?> parent) {
 			}
 		});
+	}
+	public void loadMoreMovies(){
+		switch (sortCriteria){
+			case 0:
+				page++;
+				FetchMovieTask fetchMovieTask = new FetchMovieTask();
+				fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
+				break;
+			case 1:
+				page++;
+				FetchMovieTask fetchMovie = new FetchMovieTask();
+				fetchMovie.execute(TOP_RATED,String.valueOf(page));
+				break;
+		}
+
 	}
 
 	public class FetchMovieTask extends AsyncTask<String, Void, ArrayList<Movie>> {
@@ -143,17 +221,20 @@ public class MainActivity extends ActionBarActivity {
 			try {
 				final String BASE_URL = "http://api.themoviedb.org/3/";
 				final String SORT_BY = "sort_by";
+				final String PAGE = "page";
 				final String API = "api_key";
 				Uri builtUri;
-				if(params.length > 1){
+				if(params.length > 2){
 					builtUri = Uri.parse(BASE_URL).buildUpon()
 							.appendEncodedPath(params[0])
 							.appendQueryParameter(SORT_BY, params[1])
+							.appendQueryParameter(PAGE, params[2])
 							.appendQueryParameter(API, getString(R.string.api_key))
 							.build();
 				}else{
 					builtUri = Uri.parse(BASE_URL).buildUpon()
 							.appendEncodedPath(params[0])
+							.appendQueryParameter(PAGE, params[1])
 							.appendQueryParameter(API, getString(R.string.api_key))
 							.build();
 				}
@@ -223,7 +304,6 @@ public class MainActivity extends ActionBarActivity {
 			JSONObject movieJson = new JSONObject(popMovieJsonStr);
 			JSONArray movieArray = movieJson.getJSONArray(RESULTS);
 			posterPaths = new String[numMovie];
-			movies.clear();
 			for (int i = 0; i < movieArray.length(); i++) {
 				JSONObject movieData = movieArray.getJSONObject(i);
 				Long id = movieData.getLong(ID);
@@ -239,8 +319,7 @@ public class MainActivity extends ActionBarActivity {
 		@Override
 		protected void onPostExecute(ArrayList<Movie> movies) {
 			super.onPostExecute(movies);
-			imageAdapter = new ImageAdapter(movies);
-			gridview.setAdapter(imageAdapter);
+			imageAdapter.notifyDataSetChanged();
 		}
 	}
 		public class ImageAdapter extends ArrayAdapter<Movie> {
