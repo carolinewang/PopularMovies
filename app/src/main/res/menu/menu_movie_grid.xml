@@ -5,7 +5,7 @@
 
 	<item android:id="@+id/action_load_more"
 	      android:title="@string/action_load_more"
-	      android:orderInCategory="2"
+	      android:orderInCategory="1"
 	      app:showAsAction="ifRoom"/>
 
 </menu>

@@ -1,14 +1,20 @@
 package linyingwang.popularmovies;
 
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -25,36 +31,62 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class MovieDetail extends ActionBarActivity {
+public class MovieDetailFragment extends Fragment {
+	public static final String ARG_MOVIE_ID = "movie_id";
 	private ImageView poster;
 	private TextView title;
 	private TextView releaseDate;
 	private TextView plot;
 	private TextView rating;
 	private RatingBar ratingBar;
+	private boolean favorite = false;
+	private MenuItem favoriteButton;
+	private long movieID;
 
+	@Nullable
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_movie_detail);
-		poster = (ImageView)findViewById(R.id.imageView);
-		title = (TextView)findViewById(R.id.title);
-		releaseDate = (TextView)findViewById(R.id.release_date);
-		plot = (TextView)findViewById(R.id.plot);
-		rating = (TextView)findViewById(R.id.rating);
-		ratingBar = (RatingBar)findViewById(R.id.ratingBar);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View rootView = inflater.inflate(R.layout.fragment_movie_detail,container,false);
+		poster = (ImageView)rootView.findViewById(R.id.imageView);
+		title = (TextView)rootView.findViewById(R.id.title);
+		releaseDate = (TextView)rootView.findViewById(R.id.release_date);
+		plot = (TextView)rootView.findViewById(R.id.plot);
+		rating = (TextView)rootView.findViewById(R.id.rating);
+		ratingBar = (RatingBar)rootView.findViewById(R.id.ratingBar);
 
-		Intent intent = getIntent();
-		long imgID = intent.getLongExtra(MainActivity.ID, 0);
-		GetMovieTask getMovieTask = new GetMovieTask();
-		getMovieTask.execute(imgID);
+//		Intent intent = getActivity().getIntent();
+//		if(intent !=null) {
+//			movieID = intent.getLongExtra(ARG_MOVIE_ID, 0);
+//		}
+		return rootView;
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setHasOptionsMenu(true);
+		Bundle arguments = getArguments();
+		if (arguments!=null) {
+			// Load the dummy content specified by the fragment
+			// arguments. In a real-world scenario, use a Loader
+			// to load content from a content provider.
+			movieID = arguments.getLong(ARG_MOVIE_ID);
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		GetMovieTask getMovieTask = new GetMovieTask();
+		getMovieTask.execute(movieID);
+
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_movie_detail, menu);
-		return true;
+		inflater.inflate(R.menu.menu_movie_detail, menu);
+		favoriteButton = menu.findItem(R.id.action_favorite);
 	}
 
 	@Override
@@ -63,9 +95,8 @@ public class MovieDetail extends ActionBarActivity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_favorite) {
+			addToFavorite();
 			return true;
 		}
 
@@ -163,8 +194,7 @@ public class MovieDetail extends ActionBarActivity {
 				JSONObject movieJson = new JSONObject(movieInfoJsonStr);
 				String movieTitle = movieJson.getString(TITLE);
 				title.setText(movieTitle);
-				ActionBar actionBar = getSupportActionBar();
-				actionBar.setTitle(movieTitle);
+				((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(movieTitle);
 
 				releaseDate.setText(movieJson.getString(DATE));
 				Double ratingValue = movieJson.getDouble(RATING);
@@ -173,7 +203,7 @@ public class MovieDetail extends ActionBarActivity {
 				ratingBar.setRating(vote/2);
 				plot.setText(movieJson.getString(OVERVIEW));
 				String posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
-				Picasso.with(MovieDetail.this)
+				Picasso.with(getActivity())
 						.load(posterPath)
 						.placeholder(R.drawable.movie_placeholder_text)
 						.into(poster);
@@ -182,6 +212,15 @@ public class MovieDetail extends ActionBarActivity {
 			}
 	}
 
+	}
+	public void addToFavorite(){
+		if(!favorite) {
+			favoriteButton.setIcon(R.drawable.like_white);
+			favorite = true;
+		}else{
+			favoriteButton.setIcon(R.drawable.like_outline_white);
+			favorite = false;
+		}
 	}
 }
 
