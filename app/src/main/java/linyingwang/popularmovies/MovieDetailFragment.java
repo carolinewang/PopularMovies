@@ -43,6 +43,12 @@ public class MovieDetailFragment extends Fragment {
 	private MenuItem favoriteButton;
 	private long movieID;
 
+	private String movieTitle;
+	private String date;
+	private String plotSynopsis;
+	private float vote;
+	private String posterPath;
+
 	@Nullable
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,6 +64,17 @@ public class MovieDetailFragment extends Fragment {
 //		if(intent !=null) {
 //			movieID = intent.getLongExtra(ARG_MOVIE_ID, 0);
 //		}
+		if(savedInstanceState!=null){
+			movieTitle = savedInstanceState.getString("title");
+			plotSynopsis = savedInstanceState.getString("plot");
+			date = savedInstanceState.getString("date");
+			posterPath = savedInstanceState.getString("posterPath");
+			vote = savedInstanceState.getFloat("rating");
+			loadIntoView();
+		}else{
+			GetMovieTask getMovieTask = new GetMovieTask();
+			getMovieTask.execute(movieID);
+		}
 		return rootView;
 	}
 
@@ -77,8 +94,18 @@ public class MovieDetailFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		GetMovieTask getMovieTask = new GetMovieTask();
-		getMovieTask.execute(movieID);
+
+
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("title",movieTitle);
+		outState.putString("plot",plotSynopsis);
+		outState.putString("date",date);
+		outState.putString("posterPath",posterPath);
+		outState.putFloat("rating",vote);
 
 	}
 
@@ -192,27 +219,33 @@ public class MovieDetailFragment extends Fragment {
 
 			try{
 				JSONObject movieJson = new JSONObject(movieInfoJsonStr);
-				String movieTitle = movieJson.getString(TITLE);
-				title.setText(movieTitle);
-				((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(movieTitle);
-
-				releaseDate.setText(movieJson.getString(DATE));
+				movieTitle = movieJson.getString(TITLE);
+				date = movieJson.getString(DATE);
 				Double ratingValue = movieJson.getDouble(RATING);
-				float vote = ratingValue.floatValue();
-				rating.setText("" + ratingValue + "/10");
-				ratingBar.setRating(vote/2);
-				plot.setText(movieJson.getString(OVERVIEW));
-				String posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
-				Picasso.with(getActivity())
-						.load(posterPath)
-						.placeholder(R.drawable.movie_placeholder_text)
-						.into(poster);
+				vote = ratingValue.floatValue();
+				plotSynopsis = movieJson.getString(OVERVIEW);
+				posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
+//				MovieDetail movieDetail = new MovieDetail(movieID,posterPath,movieTitle,date,plotSynopsis,vote);
+				loadIntoView();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 	}
 
 	}
+	public void loadIntoView(){
+		title.setText(movieTitle);
+		((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(movieTitle);
+		releaseDate.setText(date);
+		rating.setText("" + vote + "/10");
+		ratingBar.setRating(vote / 2);
+		plot.setText(plotSynopsis);
+		Picasso.with(getActivity())
+				.load(posterPath)
+				.placeholder(R.drawable.movie_placeholder_text)
+				.into(poster);
+	}
+	
 	public void addToFavorite(){
 		if(!favorite) {
 			favoriteButton.setIcon(R.drawable.like_white);

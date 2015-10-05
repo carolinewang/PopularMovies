@@ -13,7 +13,8 @@
         <activity
             android:name=".MainActivity"
 
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:configChanges="layoutDirection|screenSize">
 
             <!-- android:screenOrientation="portrait"> -->
             <intent-filter>
@@ -26,7 +27,8 @@
             android:name=".MovieDetailActivity"
 
             android:label="@string/title_activity_movie_detail"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:configChanges="layoutDirection|screenSize">
 
             <!-- android:screenOrientation="portrait"> -->
             <meta-data

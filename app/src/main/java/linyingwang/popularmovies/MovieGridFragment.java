@@ -4,16 +4,13 @@ import android.app.Fragment;
 import android.app.Activity;
 //import android.support.v4.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -53,6 +50,8 @@ public class MovieGridFragment extends Fragment {
 	public final static String TOP_RATED ="movie/top_rated";
 	public final static String SORT_POPULARITY ="popularity.desc";
 	private static final String SELECTED_KEY = "selected_position";
+	private static final String PARCELABLE_KEY_POPULARITY = "Most Popular";
+	private static final String PARCELABLE_KEY_TOPRATED = "Highest Rated";
 //	public final static String SORT_RATING ="vote_average.desc";
 
 	protected boolean isOnline;
@@ -63,56 +62,74 @@ public class MovieGridFragment extends Fragment {
 	private int page = 1;
 	private int sortCriteria;
 	private boolean loadMore = false;
-	public ArrayList<Movie> movies = new ArrayList<>();
+	public ArrayList<Movie> movies;
 	private ProgressBar progressBar;
 	private Spinner spinner;
 	private Callbacks mCallbacks = sDummyCallbacks;
 	private int mPosition = ListView.INVALID_POSITION;
+	private Bundle bundle;
 
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null){
+			bundle = savedInstanceState;
+			if(savedInstanceState.containsKey(PARCELABLE_KEY_POPULARITY)){
+				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_POPULARITY);
+			}else if(savedInstanceState.containsKey(PARCELABLE_KEY_TOPRATED)){
+				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_TOPRATED);
+			}
+		}else{
+			movies = new ArrayList<Movie>();
+		}
+		// Add this line in order for this fragment to handle menu events.
+		setHasOptionsMenu(true);
+	}
 
 	@Nullable
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		super.onCreateView(inflater,container,savedInstanceState);
-		View rootView = inflater.inflate(R.layout.fragment_movie_grid,container,false);
+		super.onCreateView(inflater, container, savedInstanceState);
+		View rootView = inflater.inflate(R.layout.fragment_movie_grid, container, false);
 		spinner = (Spinner) rootView.findViewById(R.id.spinner);
-		progressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
+
+		progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
 		gridview = (GridView) rootView.findViewById(R.id.gridview);
-		imageAdapter = new ImageAdapter(getActivity(),movies);
-		gridview.setAdapter(imageAdapter);
+
 		if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
 			mPosition = savedInstanceState.getInt(SELECTED_KEY);
-			Log.d("onCreateView mPosition", String.valueOf(mPosition));
-//			gridview.smoothScrollToPosition(mPosition);
+			gridview.smoothScrollToPosition(mPosition);
+
 		}
+//		else if (savedInstanceState == null){
+
+//		}
+		imageAdapter = new ImageAdapter(getActivity(), movies);
+		gridview.setAdapter(imageAdapter);
 		if (isOnline()) {
 			loadSpinner();
-			gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				public void onItemClick(AdapterView<?> parent, View v,
-				                        int position, long id) {
-//					Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-//					if(cursor != null){
-						long movieID = movies.get(position).id;
-						((Callbacks) getActivity())
-								.onItemSelected(movieID);
-//						mCallbacks.onItemSelected(movieID);
-//					}
-					mPosition = position;
-				}
-			});
-
 		} else {
 			Toast.makeText(getActivity(), R.string.toast_no_internet, Toast.LENGTH_LONG).show();
 		}
+		gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View v,
+			                        int position, long id) {
+				long movieID = movies.get(position).id;
+				((Callbacks) getActivity())
+						.onItemSelected(movieID);
+				mPosition = position;
+			}
+		});
+
 		return rootView;
 	}
+
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
 			mPosition = savedInstanceState.getInt(SELECTED_KEY);
-			Log.d("onActivityCreated mPosition", String.valueOf(mPosition));
 			// If we don't need to restart the loader, and there's a desired position to restore
 			// to, do so now.
 			gridview.setSelection(mPosition);
@@ -120,12 +137,6 @@ public class MovieGridFragment extends Fragment {
 		}
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		// Add this line in order for this fragment to handle menu events.
-		setHasOptionsMenu(true);
-	}
 
 
 	@Override
@@ -154,9 +165,17 @@ public class MovieGridFragment extends Fragment {
 		// When no item is selected, mPosition will be set to Listview.INVALID_POSITION,
 		// so check for that before storing.
 		if (mPosition != ListView.INVALID_POSITION) {
-			Log.d("onSaveInstanceState mPosition", String.valueOf(mPosition));
 			outState.putInt(SELECTED_KEY, mPosition);
 		}
+		switch (sortCriteria){
+			case 0:
+				outState.putParcelableArrayList(PARCELABLE_KEY_POPULARITY,movies);
+				break;
+			case 1:
+				outState.putParcelableArrayList(PARCELABLE_KEY_TOPRATED,movies);
+				break;
+		}
+
 		super.onSaveInstanceState(outState);
 	}
 
@@ -176,11 +195,7 @@ public class MovieGridFragment extends Fragment {
 		return super.onOptionsItemSelected(item);
 	}
 
-//	@Override
-//	public void onConfigurationChanged(Configuration newConfig) {
-//		super.onConfigurationChanged(newConfig);
-//
-//	}
+
 
 	public interface Callbacks {
 		/**
@@ -200,18 +215,6 @@ public class MovieGridFragment extends Fragment {
 	};
 
 
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		if (mPosition != ListView.INVALID_POSITION) {
-			// If we don't need to restart the loader, and there's a desired position to restore
-			// to, do so now.
-			Log.d("ConfigurationmPosition", String.valueOf(mPosition));
-			gridview.setSelection(mPosition);
-//			gridview.smoothScrollToPosition(mPosition);
-		}
-	}
-
 	public boolean isOnline() {
 		ConnectivityManager connMgr = (ConnectivityManager)
 				getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -229,6 +232,7 @@ public class MovieGridFragment extends Fragment {
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 // Apply the adapter to the spinner
 		spinner.setAdapter(adapter);
+//			savedInstanceState = bundle;
 		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -237,21 +241,24 @@ public class MovieGridFragment extends Fragment {
 				switch (position) {
 					case 0:
 						sortCriteria = 0;
+						if(bundle == null || !bundle.containsKey(PARCELABLE_KEY_POPULARITY)){
+							FetchMovieTask fetchMovieTask = new FetchMovieTask();
+							fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
+						}
 //						movies.clear();
-						FetchMovieTask fetchMovieTask = new FetchMovieTask();
-						fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
+//						FetchMovieTask fetchMovieTask = new FetchMovieTask();
+//						fetchMovieTask.execute(DISCOVER, SORT_POPULARITY, String.valueOf(page));
 						break;
 					case 1:
 						sortCriteria = 1;
+						if(bundle == null || !bundle.containsKey(PARCELABLE_KEY_TOPRATED)){
+							FetchMovieTask fetchMovie = new FetchMovieTask();
+							fetchMovie.execute(TOP_RATED,String.valueOf(page));
+						}
 //						movies.clear();
-						FetchMovieTask fetchMovie = new FetchMovieTask();
-						fetchMovie.execute(TOP_RATED,String.valueOf(page));
+//						FetchMovieTask fetchMovie = new FetchMovieTask();
+//						fetchMovie.execute(TOP_RATED, String.valueOf(page));
 						break;
-					default:
-						sortCriteria = 0;
-//						movies.clear();
-						FetchMovieTask fetch = new FetchMovieTask();
-						fetch.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
 				}
 			}
 
@@ -260,6 +267,8 @@ public class MovieGridFragment extends Fragment {
 			}
 		});
 	}
+
+
 	public void loadMoreMovies(){
 		loadMore = true;
 		switch (sortCriteria){
@@ -412,14 +421,14 @@ public class MovieGridFragment extends Fragment {
 			super.onPostExecute(movies);
 			progressBar.setVisibility(View.GONE);
 
-			if(!loadMore){
+			if(loadMore){
+				imageAdapter.notifyDataSetChanged();
+//				gridview.smoothScrollToPosition(mPosition);
+			}else{
 				imageAdapter = new ImageAdapter(getActivity(), movies);
 				gridview.setAdapter(imageAdapter);
-			}else{
-//				progressBar2.setVisibility(View.GONE);
-				imageAdapter.notifyDataSetChanged();
+//				gridview.smoothScrollToPosition(mPosition);
 			}
-			gridview.smoothScrollToPosition(mPosition);
 
 		}
 	}
