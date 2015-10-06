@@ -18,7 +18,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -48,6 +55,9 @@ public class MovieDetailFragment extends Fragment {
 	private String plotSynopsis;
 	private float vote;
 	private String posterPath;
+
+	private ParseObject favMovie;
+	private ParseObject favMoviePin;
 
 	@Nullable
 	@Override
@@ -104,7 +114,7 @@ public class MovieDetailFragment extends Fragment {
 		outState.putString("title",movieTitle);
 		outState.putString("plot",plotSynopsis);
 		outState.putString("date",date);
-		outState.putString("posterPath",posterPath);
+		outState.putString("posterPath", posterPath);
 		outState.putFloat("rating",vote);
 
 	}
@@ -114,6 +124,7 @@ public class MovieDetailFragment extends Fragment {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		inflater.inflate(R.menu.menu_movie_detail, menu);
 		favoriteButton = menu.findItem(R.id.action_favorite);
+		setFavoriteStatus();
 	}
 
 	@Override
@@ -245,14 +256,67 @@ public class MovieDetailFragment extends Fragment {
 				.placeholder(R.drawable.movie_placeholder_text)
 				.into(poster);
 	}
-	
+
+	public void setFavoriteStatus(){
+		ParseQuery<ParseObject> queryFav = ParseQuery.getQuery("FavMovie");
+		queryFav.fromLocalDatastore();
+		queryFav.whereEqualTo("movieID", movieID);
+		queryFav.getFirstInBackground(new GetCallback<ParseObject>() {
+			@Override
+			public void done(ParseObject parseObject, ParseException e) {
+				if(e == null){
+					favMovie = parseObject;
+					favorite = true;
+					favoriteButton.setIcon(R.drawable.like_white);
+				}
+			}
+		});
+		;
+	}
+
 	public void addToFavorite(){
 		if(!favorite) {
 			favoriteButton.setIcon(R.drawable.like_white);
 			favorite = true;
+			favMoviePin = new ParseObject("FavMovie");
+			ParseUser currentUser = ParseUser.getCurrentUser();
+			favMoviePin.put("movieID",movieID);
+			favMoviePin.put("posterPath",posterPath);
+			favMoviePin.put("user",currentUser);
+			favMoviePin.put("plot",plotSynopsis);
+			favMoviePin.put("releaseDate",date);
+			favMoviePin.put("rating",vote);
+			favMoviePin.pinInBackground(new SaveCallback() {
+				@Override
+				public void done(ParseException e) {
+					if(e == null){
+						Toast.makeText(getActivity(),R.string.toast_add_to_favorite,
+								Toast.LENGTH_SHORT).show();
+					}else{
+						Toast.makeText(getActivity(),
+								"Error saving: " + e.getMessage(),
+								Toast.LENGTH_LONG).show();
+					}
+				}
+			});
+
 		}else{
 			favoriteButton.setIcon(R.drawable.like_outline_white);
 			favorite = false;
+			if(favMoviePin!= null){
+					favMoviePin.unpinInBackground();
+				}
+			if(favMovie!= null){
+				try {
+					favMovie.delete();
+					Toast.makeText(getActivity(),R.string.toast_remove_from_favorite,
+							Toast.LENGTH_SHORT).show();
+					favorite = false;
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+				}
+			}
+
 		}
 	}
 }

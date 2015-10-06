@@ -1,9 +1,11 @@
 package linyingwang.popularmovies;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.Activity;
 //import android.support.v4.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -27,6 +29,11 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.parse.DeleteCallback;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -106,11 +113,11 @@ public class MovieGridFragment extends Fragment {
 //		}
 		imageAdapter = new ImageAdapter(getActivity(), movies);
 		gridview.setAdapter(imageAdapter);
-		if (isOnline()) {
+//		if (isOnline()) {
 			loadSpinner();
-		} else {
-			Toast.makeText(getActivity(), R.string.toast_no_internet, Toast.LENGTH_LONG).show();
-		}
+//		} else {
+//			Toast.makeText(getActivity(), R.string.toast_no_internet, Toast.LENGTH_LONG).show();
+//		}
 		gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 			                        int position, long id) {
@@ -223,6 +230,17 @@ public class MovieGridFragment extends Fragment {
 		return isOnline;
 	}
 
+	public void showDialogWhenOffline(final Spinner spinner){
+		new AlertDialog.Builder(getActivity()).setIcon(android.R.drawable.ic_dialog_alert).setTitle("No Internet Connection")
+				.setMessage("Would you like to view \"My Favorites\" when offline?")
+				.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						spinner.setSelection(2);
+					}
+				}).setNegativeButton("No", null).show();
+	}
+
 	public void loadSpinner() {
 
 // Create an ArrayAdapter using the string array and a default spinner layout
@@ -240,24 +258,30 @@ public class MovieGridFragment extends Fragment {
 				page = 1;
 				switch (position) {
 					case 0:
+						if(isOnline()){
 						sortCriteria = 0;
 						if(bundle == null || !bundle.containsKey(PARCELABLE_KEY_POPULARITY)){
 							FetchMovieTask fetchMovieTask = new FetchMovieTask();
 							fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
 						}
-//						movies.clear();
-//						FetchMovieTask fetchMovieTask = new FetchMovieTask();
-//						fetchMovieTask.execute(DISCOVER, SORT_POPULARITY, String.valueOf(page));
+						}else {
+							showDialogWhenOffline(spinner);
+						}
 						break;
 					case 1:
-						sortCriteria = 1;
-						if(bundle == null || !bundle.containsKey(PARCELABLE_KEY_TOPRATED)){
-							FetchMovieTask fetchMovie = new FetchMovieTask();
-							fetchMovie.execute(TOP_RATED,String.valueOf(page));
+						if(isOnline()){
+							sortCriteria = 1;
+							if(bundle == null || !bundle.containsKey(PARCELABLE_KEY_TOPRATED)){
+								FetchMovieTask fetchMovie = new FetchMovieTask();
+								fetchMovie.execute(TOP_RATED,String.valueOf(page));
+							}
+						}else {
+							showDialogWhenOffline(spinner);
 						}
-//						movies.clear();
-//						FetchMovieTask fetchMovie = new FetchMovieTask();
-//						fetchMovie.execute(TOP_RATED, String.valueOf(page));
+						break;
+					case 2:
+						sortCriteria = 2;
+						displayFavorites();
 						break;
 				}
 			}
@@ -267,6 +291,7 @@ public class MovieGridFragment extends Fragment {
 			}
 		});
 	}
+
 
 
 	public void loadMoreMovies(){
@@ -284,6 +309,35 @@ public class MovieGridFragment extends Fragment {
 				break;
 		}
 
+	}
+
+	public void displayFavorites(){
+		movies.clear();
+		ParseQuery <ParseObject> queryFavMovies = ParseQuery.getQuery("FavMovie");
+		queryFavMovies.fromLocalDatastore();
+		queryFavMovies.findInBackground(new FindCallback<ParseObject>() {
+			@Override
+			public void done(List<ParseObject> favMovies, ParseException e) {
+				if(e == null){
+					if(favMovies.size()!=0){
+						for(int i= 0; i<favMovies.size();i++){
+							Long movieID = favMovies.get(i).getLong("movieID");
+							String posterPath = favMovies.get(i).getString("posterPath");
+							Movie movie = new Movie(movieID,posterPath);
+							movies.add(movie);
+							Log.d("fav movie", String.valueOf(movieID));
+						}
+//						imageAdapter.notifyDataSetChanged();
+						imageAdapter = new ImageAdapter(getActivity(),movies);
+						gridview.setAdapter(imageAdapter);
+					}else{
+						Toast.makeText(getActivity(),R.string.toast_no_favorite,Toast.LENGTH_SHORT).show();
+					}
+				}else{
+					Toast.makeText(getActivity(),"Error: " + e.toString(),Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 	}
 
 	public class FetchMovieTask extends AsyncTask<String, Void, ArrayList<Movie>> {

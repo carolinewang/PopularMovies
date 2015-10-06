@@ -13,7 +13,7 @@ public class Application extends android.app.Application {
 	public void onCreate() {
 		super.onCreate();
 
-		Parse.enableLocalDatastore(this);
+		Parse.enableLocalDatastore(getApplicationContext());
 		ParseUser.enableAutomaticUser();
 		Parse.initialize(this, "zIaDc7HGC9AdFyg85C7JbOxNwGI8OOXdFEPn1yJY",
 				"wIPqOr9i3DcgKNrqL7h8S0UhrhnJOQh9PVDCJVkZ");
