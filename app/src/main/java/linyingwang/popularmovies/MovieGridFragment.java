@@ -312,7 +312,7 @@ public class MovieGridFragment extends Fragment {
 	}
 
 	public void displayFavorites(){
-		movies.clear();
+
 		ParseQuery <ParseObject> queryFavMovies = ParseQuery.getQuery("FavMovie");
 		queryFavMovies.fromLocalDatastore();
 		queryFavMovies.findInBackground(new FindCallback<ParseObject>() {
@@ -320,6 +320,7 @@ public class MovieGridFragment extends Fragment {
 			public void done(List<ParseObject> favMovies, ParseException e) {
 				if(e == null){
 					if(favMovies.size()!=0){
+						movies.clear();
 						for(int i= 0; i<favMovies.size();i++){
 							Long movieID = favMovies.get(i).getLong("movieID");
 							String posterPath = favMovies.get(i).getString("posterPath");

@@ -9,6 +9,8 @@
 	<string name="toast_remove_from_favorite">Removed from My Favorite Movies.</string>
 	<string name="toast_no_favorite">You have not added any favorite movies yet!</string>
 	<string name="api_key">81cdc16066eb01e599562bc01d19e5a4</string>
+	<string name="json_string_no_review">"results":[]</string>
+	<string name="no_review">Reviews: currently no reviews for this movie.</string>
 
 	<string-array name="sort_criteria">
 		<item>Most Popular</item>

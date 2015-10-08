@@ -19,14 +19,19 @@ public class MovieDetail implements Parcelable{
 	public String releaseDate;
 	public String plot;
 	public float vote;
+	public ArrayList<Trailer> trailers;
+	public ArrayList<Review> reviews;
 
-	public MovieDetail(long id, String posterPath, String title, String releaseDate,String plot, float vote){
+	public MovieDetail(long id, String posterPath, String title, String releaseDate,String plot,
+	                   float vote,ArrayList<Trailer> trailers,ArrayList<Review> reviews){
 		this.id = id;
 		this.posterPath = posterPath;
 		this.title = title;
 		this.releaseDate = releaseDate;
 		this.plot = plot;
 		this.vote = vote;
+		this.trailers = trailers;
+		this.reviews = reviews;
 	}
 
 	private MovieDetail(Parcel in){
@@ -36,6 +41,8 @@ public class MovieDetail implements Parcelable{
 		releaseDate = in.readString();
 		plot = in.readString();
 		vote = in.readFloat();
+//		trailers = in.readArrayList(Trailer);
+//		reviews = in.readArrayList(Review);
 	}
 	@Override
 	public int describeContents() {

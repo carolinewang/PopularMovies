@@ -27,4 +27,5 @@ dependencies {
     compile 'com.parse.bolts:bolts-android:1.+'
     compile fileTree(include: 'Parse-*.jar', dir: 'libs')
     compile files('libs/Parse-1.10.2.jar')
+    compile 'com.github.paolorotolo:expandableheightlistview:1.0.0'
 }

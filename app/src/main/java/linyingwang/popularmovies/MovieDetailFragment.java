@@ -15,11 +15,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.paolorotolo.expandableheightlistview.ExpandableHeightListView;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -28,6 +33,7 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,14 +43,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class MovieDetailFragment extends Fragment {
 	public static final String ARG_MOVIE_ID = "movie_id";
+	public static final String TRAILER_QUERY_KEY = "videos";
+	public static final String REVIEW_QUERY_KEY = "reviews";
 	private ImageView poster;
 	private TextView title;
 	private TextView releaseDate;
 	private TextView plot;
 	private TextView rating;
+	private TextView reviewTitle;
 	private RatingBar ratingBar;
 	private boolean favorite = false;
 	private MenuItem favoriteButton;
@@ -59,6 +69,16 @@ public class MovieDetailFragment extends Fragment {
 	private ParseObject favMovie;
 	private ParseObject favMoviePin;
 
+	private ExpandableHeightGridView trailerGridView;
+	private ExpandableHeightListView reviewList;
+	private ArrayList<Trailer> trailers;
+	private boolean trailerQuery;
+	private boolean reviewQuery;
+	private boolean movieQuery;
+	private boolean finished;
+	private ProgressBar progressBar;
+	private TrailerAdapter trailerAdapter;
+
 	@Nullable
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,7 +88,27 @@ public class MovieDetailFragment extends Fragment {
 		releaseDate = (TextView)rootView.findViewById(R.id.release_date);
 		plot = (TextView)rootView.findViewById(R.id.plot);
 		rating = (TextView)rootView.findViewById(R.id.rating);
+		reviewTitle = (TextView)rootView.findViewById(R.id.review);
 		ratingBar = (RatingBar)rootView.findViewById(R.id.ratingBar);
+		trailerGridView = (ExpandableHeightGridView)rootView.findViewById(R.id.gridView);
+		trailerGridView.setExpanded(true);
+		trailerGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				String trailerLink = trailers.get(position).link;
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerLink));
+				if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+					startActivity(intent);
+				}
+
+			}
+		});
+		reviewList = (ExpandableHeightListView)rootView.findViewById(R.id.expandable_listview);
+		reviewList.setExpanded(true);
+		progressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
+
+//		trailerAdapter = new TrailerAdapter(getActivity(),trailers);
+//		trailerGridView.setAdapter(trailerAdapter);
 
 //		Intent intent = getActivity().getIntent();
 //		if(intent !=null) {
@@ -80,10 +120,18 @@ public class MovieDetailFragment extends Fragment {
 			date = savedInstanceState.getString("date");
 			posterPath = savedInstanceState.getString("posterPath");
 			vote = savedInstanceState.getFloat("rating");
-			loadIntoView();
+			loadMovieInfo();
 		}else{
 			GetMovieTask getMovieTask = new GetMovieTask();
-			getMovieTask.execute(movieID);
+			getMovieTask.execute(String.valueOf(movieID));
+			Log.d("getMovieTask status", String.valueOf(getMovieTask.getStatus()));
+
+			GetMovieTask getMovieReviews = new GetMovieTask();
+			getMovieReviews.execute(String.valueOf(movieID),REVIEW_QUERY_KEY);
+
+			GetMovieTask getMovieTrailer = new GetMovieTask();
+			getMovieTrailer.execute(String.valueOf(movieID),TRAILER_QUERY_KEY);
+			Log.d("getMovieTrailer status", String.valueOf(getMovieTrailer.getStatus()));
 		}
 		return rootView;
 	}
@@ -98,6 +146,7 @@ public class MovieDetailFragment extends Fragment {
 			// arguments. In a real-world scenario, use a Loader
 			// to load content from a content provider.
 			movieID = arguments.getLong(ARG_MOVIE_ID);
+			Log.d("movieID",String.valueOf(movieID));
 		}
 	}
 
@@ -113,9 +162,9 @@ public class MovieDetailFragment extends Fragment {
 		super.onSaveInstanceState(outState);
 		outState.putString("title",movieTitle);
 		outState.putString("plot",plotSynopsis);
-		outState.putString("date",date);
+		outState.putString("date", date);
 		outState.putString("posterPath", posterPath);
-		outState.putFloat("rating",vote);
+		outState.putFloat("rating", vote);
 
 	}
 
@@ -141,12 +190,13 @@ public class MovieDetailFragment extends Fragment {
 		return super.onOptionsItemSelected(item);
 	}
 
-	public class GetMovieTask extends AsyncTask<Long, Void, String> {
+
+	public class GetMovieTask extends AsyncTask<String, Void, String> {
 
 		private final String LOG_TAG = GetMovieTask.class.getSimpleName();
 
 		@Override
-		protected String doInBackground(Long... params) {
+		protected String doInBackground(String... params) {
 			// These two need to be declared outside the try/catch
 // so that they can be closed in the finally block.
 			if (params.length == 0) {
@@ -162,10 +212,28 @@ public class MovieDetailFragment extends Fragment {
 
 				final String BASE_URL = "http://api.themoviedb.org/3/movie/";
 				final String API = "api_key";
-				Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-						.appendPath(String.valueOf(params[0]))
-						.appendQueryParameter(API, getString(R.string.api_key))
-						.build();
+				Uri builtUri;
+
+				if(params.length > 1){
+					builtUri = Uri.parse(BASE_URL).buildUpon()
+							.appendPath(String.valueOf(params[0]))
+							.appendPath(String.valueOf(params[1]))
+							.appendQueryParameter(API, getString(R.string.api_key))
+							.build();
+					if(String.valueOf(params[1]).equals(TRAILER_QUERY_KEY)){
+						trailerQuery = true;
+					}
+					if(String.valueOf(params[1]).equals(REVIEW_QUERY_KEY)){
+						reviewQuery = true;
+					}
+				}else {
+					builtUri = Uri.parse(BASE_URL).buildUpon()
+							.appendPath(String.valueOf(params[0]))
+							.appendQueryParameter(API, getString(R.string.api_key))
+							.build();
+					movieQuery = true;
+				}
+
 				URL url = new URL(builtUri.toString());
 				Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
@@ -196,7 +264,7 @@ public class MovieDetailFragment extends Fragment {
 					movieInfoJsonStr = null;
 				}
 				movieInfoJsonStr = buffer.toString();
-				Log.v(LOG_TAG, "Movie Info Json String" + movieInfoJsonStr);
+				Log.d(LOG_TAG, "Movie Info Json String" + movieInfoJsonStr);
 
 			} catch (IOException e) {
 				Log.e("PlaceholderFragment", "Error ", e);
@@ -220,6 +288,14 @@ public class MovieDetailFragment extends Fragment {
 		}
 
 		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			progressBar.setVisibility(View.VISIBLE);
+			finished = false;
+			Log.d("pre finished",String.valueOf(finished));
+		}
+
+		@Override
 		protected void onPostExecute(String movieInfoJsonStr) {
 			super.onPostExecute(movieInfoJsonStr);
 			final String DATE = "release_date";
@@ -228,23 +304,91 @@ public class MovieDetailFragment extends Fragment {
 			final String OVERVIEW = "overview";
 			final String TITLE = "original_title";
 
-			try{
-				JSONObject movieJson = new JSONObject(movieInfoJsonStr);
-				movieTitle = movieJson.getString(TITLE);
-				date = movieJson.getString(DATE);
-				Double ratingValue = movieJson.getDouble(RATING);
-				vote = ratingValue.floatValue();
-				plotSynopsis = movieJson.getString(OVERVIEW);
-				posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
+			final String RESULTS = "results";
+			final String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
+			final String THUMBNAIL_URL_PREFIX = "http://img.youtube.com/vi/";
+			final String THUMBNAIL_URL_SUFFIX = "/0.jpg";
+			final String TRAILER_KEY = "key";
+			final String TRAILER_NAME = "name";
+			final String REVIEW_KEY = "content";
+			final String REVIEW_AUTHOR_KEY = "author";
+			if(movieQuery) {
+				try {
+					JSONObject movieJson = new JSONObject(movieInfoJsonStr);
+					Log.d("movieInfoJson movie",movieInfoJsonStr);
+					movieTitle = movieJson.getString(TITLE);
+					date = movieJson.getString(DATE);
+					Double ratingValue = movieJson.getDouble(RATING);
+					vote = ratingValue.floatValue();
+					plotSynopsis = movieJson.getString(OVERVIEW);
+					posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
+					Log.d("movie info", movieTitle);
 //				MovieDetail movieDetail = new MovieDetail(movieID,posterPath,movieTitle,date,plotSynopsis,vote);
-				loadIntoView();
-			} catch (JSONException e) {
-				e.printStackTrace();
+					loadMovieInfo();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			}
-	}
+			if(trailerQuery) {
+				try {
+					JSONObject trailerJson = new JSONObject(movieInfoJsonStr);
+					Log.d("movieInfoJson trailers",movieInfoJsonStr);
+					JSONArray trailerArray = trailerJson.getJSONArray(RESULTS);
+					trailers = new ArrayList<>();
+					for (int i = 0; i < trailerArray.length(); i++) {
+						JSONObject trailerData = trailerArray.getJSONObject(i);
+						String trailerKey = trailerData.getString(TRAILER_KEY);
+						String trailerLink = TRAILER_BASE_URL + trailerKey;
+						String trailerName = trailerData.getString(TRAILER_NAME);
+						String thumbnail = THUMBNAIL_URL_PREFIX + trailerKey + THUMBNAIL_URL_SUFFIX;
+						Trailer trailer = new Trailer(trailerLink, trailerName, thumbnail);
+						trailers.add(trailer);
+						Log.d(LOG_TAG, "trailer link fetched: " + trailerLink);
+						Log.d(LOG_TAG, "trailer name fetched: " + trailerName);
+					}
+					trailerAdapter = new TrailerAdapter(getActivity(), trailers);
+					trailerGridView.setAdapter(trailerAdapter);
+					trailerGridView.setFocusable(false);
+//						trailerAdapter.notifyDataSetChanged();
+					Log.d("getMovieTrailer status", String.valueOf(getStatus()));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			if(reviewQuery) {
+//				if (!movieInfoJsonStr.contains(getString(R.string.json_string_no_review))) {
+					try {
+						JSONObject reviewJson = new JSONObject(movieInfoJsonStr);
+						Log.d("movieInfoJson review",movieInfoJsonStr);
+						JSONArray reviewArray = reviewJson.getJSONArray(RESULTS);
+						if(reviewArray.length()!=0) {
+							ArrayList<Review> reviews = new ArrayList<>();
+							for (int i = 0; i < reviewArray.length(); i++) {
+								JSONObject reviewData = reviewArray.getJSONObject(i);
+								String content = reviewData.getString(REVIEW_KEY);
+								String author = reviewData.getString(REVIEW_AUTHOR_KEY);
+								Review review = new Review(author, content);
+								reviews.add(review);
+								Log.d(LOG_TAG, "review fetched: " + content);
+							}
+							ReviewAdapter reviewAdapter = new ReviewAdapter(getActivity(), reviews);
+							reviewList.setAdapter(reviewAdapter);
+						}else{
+							reviewTitle.setText(R.string.no_review);
+						}
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+			}
+			finished = true;
+			Log.d("post finished",String.valueOf(finished));
+			progressBar.setVisibility(View.GONE);
+			}
 
 	}
-	public void loadIntoView(){
+
+
+	public void loadMovieInfo(){
 		title.setText(movieTitle);
 		((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(movieTitle);
 		releaseDate.setText(date);
@@ -256,6 +400,7 @@ public class MovieDetailFragment extends Fragment {
 				.placeholder(R.drawable.movie_placeholder_text)
 				.into(poster);
 	}
+
 
 	public void setFavoriteStatus(){
 		ParseQuery<ParseObject> queryFav = ParseQuery.getQuery("FavMovie");
