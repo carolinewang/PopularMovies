@@ -2,6 +2,7 @@
 	<string name="app_name">Pop Movies</string>
 
 	<string name="action_favorite">Add to favorite</string>
+	<string name="action_share">Share the Movie</string>
 	<string name="action_load_more">Load More</string>
 	<string name="action_spinner">Sort by</string>
 	<string name="toast_no_internet">No Internet connection. Please turn on the Internet and reopen the app.</string>
@@ -10,7 +11,10 @@
 	<string name="toast_no_favorite">You have not added any favorite movies yet!</string>
 	<string name="api_key">81cdc16066eb01e599562bc01d19e5a4</string>
 	<string name="json_string_no_review">"results":[]</string>
-	<string name="no_review">Reviews: currently no reviews for this movie.</string>
+	<string name="no_review">Reviews: \n currently no reviews for this movie.</string>
+	<string name="no_trailer">Trailers: \n currently no trailers for this movie.</string>
+	<string name="intent_share_msg">Check out this cool movie I found on #Pop Movies App: </string>
+	<string name="intent_share_msg_trailer">Watch the trailer here: </string>
 
 	<string-array name="sort_criteria">
 		<item>Most Popular</item>

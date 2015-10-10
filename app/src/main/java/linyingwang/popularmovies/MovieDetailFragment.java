@@ -55,6 +55,7 @@ public class MovieDetailFragment extends Fragment {
 	private TextView plot;
 	private TextView rating;
 	private TextView reviewTitle;
+	private TextView trailerTitle;
 	private RatingBar ratingBar;
 	private boolean favorite = false;
 	private MenuItem favoriteButton;
@@ -72,12 +73,14 @@ public class MovieDetailFragment extends Fragment {
 	private ExpandableHeightGridView trailerGridView;
 	private ExpandableHeightListView reviewList;
 	private ArrayList<Trailer> trailers;
+	private ArrayList<Review> reviews;
 	private boolean trailerQuery;
 	private boolean reviewQuery;
 	private boolean movieQuery;
 	private boolean finished;
 	private ProgressBar progressBar;
 	private TrailerAdapter trailerAdapter;
+	private ReviewAdapter  reviewAdapter;
 
 	@Nullable
 	@Override
@@ -89,8 +92,11 @@ public class MovieDetailFragment extends Fragment {
 		plot = (TextView)rootView.findViewById(R.id.plot);
 		rating = (TextView)rootView.findViewById(R.id.rating);
 		reviewTitle = (TextView)rootView.findViewById(R.id.review);
+		trailerTitle = (TextView)rootView.findViewById(R.id.textView2);
 		ratingBar = (RatingBar)rootView.findViewById(R.id.ratingBar);
 		trailerGridView = (ExpandableHeightGridView)rootView.findViewById(R.id.gridView);
+
+		trailerGridView.setFocusable(false);
 		trailerGridView.setExpanded(true);
 		trailerGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -107,13 +113,6 @@ public class MovieDetailFragment extends Fragment {
 		reviewList.setExpanded(true);
 		progressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
 
-//		trailerAdapter = new TrailerAdapter(getActivity(),trailers);
-//		trailerGridView.setAdapter(trailerAdapter);
-
-//		Intent intent = getActivity().getIntent();
-//		if(intent !=null) {
-//			movieID = intent.getLongExtra(ARG_MOVIE_ID, 0);
-//		}
 		if(savedInstanceState!=null){
 			movieTitle = savedInstanceState.getString("title");
 			plotSynopsis = savedInstanceState.getString("plot");
@@ -121,7 +120,14 @@ public class MovieDetailFragment extends Fragment {
 			posterPath = savedInstanceState.getString("posterPath");
 			vote = savedInstanceState.getFloat("rating");
 			loadMovieInfo();
+
+			trailers = savedInstanceState.getParcelableArrayList("trailers");
+			reviews = savedInstanceState.getParcelableArrayList("reviews");
+
+
 		}else{
+			trailers = new ArrayList<>();
+			reviews = new ArrayList<>();
 			GetMovieTask getMovieTask = new GetMovieTask();
 			getMovieTask.execute(String.valueOf(movieID));
 			Log.d("getMovieTask status", String.valueOf(getMovieTask.getStatus()));
@@ -133,6 +139,11 @@ public class MovieDetailFragment extends Fragment {
 			getMovieTrailer.execute(String.valueOf(movieID),TRAILER_QUERY_KEY);
 			Log.d("getMovieTrailer status", String.valueOf(getMovieTrailer.getStatus()));
 		}
+
+		trailerAdapter = new TrailerAdapter(getActivity(), trailers);
+		trailerGridView.setAdapter(trailerAdapter);
+		reviewAdapter = new ReviewAdapter(getActivity(), reviews);
+		reviewList.setAdapter(reviewAdapter);
 		return rootView;
 	}
 
@@ -160,11 +171,13 @@ public class MovieDetailFragment extends Fragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString("title",movieTitle);
-		outState.putString("plot",plotSynopsis);
+		outState.putString("title", movieTitle);
+		outState.putString("plot", plotSynopsis);
 		outState.putString("date", date);
 		outState.putString("posterPath", posterPath);
 		outState.putFloat("rating", vote);
+		outState.putParcelableArrayList("trailers", trailers);
+		outState.putParcelableArrayList("reviews",reviews);
 
 	}
 
@@ -184,6 +197,17 @@ public class MovieDetailFragment extends Fragment {
 		int id = item.getItemId();
 		if (id == R.id.action_favorite) {
 			addToFavorite();
+			return true;
+		}
+		if (id == R.id.action_share) {
+			String msg = getString(R.string.intent_share_msg) + " " + movieTitle + "! "
+					+ getString(R.string.intent_share_msg_trailer) + " " + trailers.get(0).link;
+			Intent intent = new Intent();
+			intent.putExtra(Intent.EXTRA_TEXT, msg);
+			intent.setType("text/plain");
+			if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+				startActivity(intent);
+			}
 			return true;
 		}
 
@@ -292,7 +316,7 @@ public class MovieDetailFragment extends Fragment {
 			super.onPreExecute();
 			progressBar.setVisibility(View.VISIBLE);
 			finished = false;
-			Log.d("pre finished",String.valueOf(finished));
+			Log.d("pre finished", String.valueOf(finished));
 		}
 
 		@Override
@@ -334,23 +358,26 @@ public class MovieDetailFragment extends Fragment {
 					JSONObject trailerJson = new JSONObject(movieInfoJsonStr);
 					Log.d("movieInfoJson trailers",movieInfoJsonStr);
 					JSONArray trailerArray = trailerJson.getJSONArray(RESULTS);
-					trailers = new ArrayList<>();
-					for (int i = 0; i < trailerArray.length(); i++) {
-						JSONObject trailerData = trailerArray.getJSONObject(i);
-						String trailerKey = trailerData.getString(TRAILER_KEY);
-						String trailerLink = TRAILER_BASE_URL + trailerKey;
-						String trailerName = trailerData.getString(TRAILER_NAME);
-						String thumbnail = THUMBNAIL_URL_PREFIX + trailerKey + THUMBNAIL_URL_SUFFIX;
-						Trailer trailer = new Trailer(trailerLink, trailerName, thumbnail);
-						trailers.add(trailer);
-						Log.d(LOG_TAG, "trailer link fetched: " + trailerLink);
-						Log.d(LOG_TAG, "trailer name fetched: " + trailerName);
+					if(trailerArray.length()!=0){
+//						trailers = new ArrayList<>();
+						for (int i = 0; i < trailerArray.length(); i++) {
+							JSONObject trailerData = trailerArray.getJSONObject(i);
+							String trailerKey = trailerData.getString(TRAILER_KEY);
+							String trailerLink = TRAILER_BASE_URL + trailerKey;
+							String trailerName = trailerData.getString(TRAILER_NAME);
+							String thumbnail = THUMBNAIL_URL_PREFIX + trailerKey + THUMBNAIL_URL_SUFFIX;
+							Trailer trailer = new Trailer(trailerLink, trailerName, thumbnail);
+							trailers.add(trailer);
+							Log.d(LOG_TAG, "trailer link fetched: " + trailerLink);
+							Log.d(LOG_TAG, "trailer name fetched: " + trailerName);
+						}
+
+						trailerAdapter.notifyDataSetChanged();
+						Log.d("getMovieTrailer status", String.valueOf(getStatus()));
+					}else{
+						trailerTitle.setText(R.string.no_trailer);
 					}
-					trailerAdapter = new TrailerAdapter(getActivity(), trailers);
-					trailerGridView.setAdapter(trailerAdapter);
-					trailerGridView.setFocusable(false);
-//						trailerAdapter.notifyDataSetChanged();
-					Log.d("getMovieTrailer status", String.valueOf(getStatus()));
+
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -362,7 +389,7 @@ public class MovieDetailFragment extends Fragment {
 						Log.d("movieInfoJson review",movieInfoJsonStr);
 						JSONArray reviewArray = reviewJson.getJSONArray(RESULTS);
 						if(reviewArray.length()!=0) {
-							ArrayList<Review> reviews = new ArrayList<>();
+//							reviews = new ArrayList<>();
 							for (int i = 0; i < reviewArray.length(); i++) {
 								JSONObject reviewData = reviewArray.getJSONObject(i);
 								String content = reviewData.getString(REVIEW_KEY);
@@ -371,8 +398,7 @@ public class MovieDetailFragment extends Fragment {
 								reviews.add(review);
 								Log.d(LOG_TAG, "review fetched: " + content);
 							}
-							ReviewAdapter reviewAdapter = new ReviewAdapter(getActivity(), reviews);
-							reviewList.setAdapter(reviewAdapter);
+							reviewAdapter.notifyDataSetChanged();
 						}else{
 							reviewTitle.setText(R.string.no_review);
 						}

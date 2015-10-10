@@ -8,4 +8,10 @@
             android:icon="@drawable/like_outline_white"
             app:showAsAction="always"
             />
+      <item android:id="@+id/action_share"
+            android:title="@string/action_share"
+            android:orderInCategory="3"
+            android:icon="@drawable/ic_action_share"
+            app:showAsAction="always"
+          />
 </menu>
