@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.Activity;
 //import android.support.v4.app.Fragment;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,6 +15,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,12 +23,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -56,9 +61,11 @@ public class MovieGridFragment extends Fragment {
 	public final static String DISCOVER ="discover/movie";
 	public final static String TOP_RATED ="movie/top_rated";
 	public final static String SORT_POPULARITY ="popularity.desc";
+	public final static String SEARCH ="search/movie";
 	private static final String SELECTED_KEY = "selected_position";
 	private static final String PARCELABLE_KEY_POPULARITY = "Most Popular";
 	private static final String PARCELABLE_KEY_TOPRATED = "Highest Rated";
+	private static final String PARCELABLE_SEARCH = "search results";
 //	public final static String SORT_RATING ="vote_average.desc";
 
 	protected boolean isOnline;
@@ -67,14 +74,21 @@ public class MovieGridFragment extends Fragment {
 	public ImageAdapter imageAdapter;
 	private GridView gridview;
 	private int page = 1;
+	private int searchPage = 1;
+	private boolean mNextPage;
 	private int sortCriteria;
 	private boolean loadMore = false;
+	private boolean search = false;
 	public ArrayList<Movie> movies;
 	private ProgressBar progressBar;
+//	private ProgressBar progressBarLoad;
 	private Spinner spinner;
 	private Callbacks mCallbacks = sDummyCallbacks;
 	private int mPosition = ListView.INVALID_POSITION;
 	private Bundle bundle;
+
+	private SearchView searchView;
+	private String query;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -85,13 +99,17 @@ public class MovieGridFragment extends Fragment {
 				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_POPULARITY);
 			}else if(savedInstanceState.containsKey(PARCELABLE_KEY_TOPRATED)){
 				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_TOPRATED);
+			}else{
+				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_SEARCH);
 			}
 		}else{
 			movies = new ArrayList<Movie>();
 		}
 		// Add this line in order for this fragment to handle menu events.
 		setHasOptionsMenu(true);
+
 	}
+
 
 	@Nullable
 	@Override
@@ -101,6 +119,7 @@ public class MovieGridFragment extends Fragment {
 		spinner = (Spinner) rootView.findViewById(R.id.spinner);
 
 		progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
+//		progressBarLoad = (ProgressBar) rootView.findViewById(R.id.progressBar2);
 		gridview = (GridView) rootView.findViewById(R.id.gridview);
 
 		if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
@@ -113,11 +132,34 @@ public class MovieGridFragment extends Fragment {
 //		}
 		imageAdapter = new ImageAdapter(getActivity(), movies);
 		gridview.setAdapter(imageAdapter);
-//		if (isOnline()) {
-			loadSpinner();
-//		} else {
-//			Toast.makeText(getActivity(), R.string.toast_no_internet, Toast.LENGTH_LONG).show();
-//		}
+
+//		loadSpinner();
+
+		handleIntent(getActivity().getIntent());
+		gridview.setOnScrollListener(new SampleScrollListener(getActivity()) {
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+			                     int totalItemCount) {
+
+				// the list is empty, return
+				if (totalItemCount == 0) return;
+
+				// if "the first item visible on the screen" +
+				// "number of item visible" == "total items actually in the list"
+				// then I'm at the end, get next page
+				if (firstVisibleItem + visibleItemCount == totalItemCount) {
+					//since the method is called several times, check if I already get the new page
+					if (mNextPage) {
+						page++;
+						mNextPage = false;
+						loadMoreMovies();
+					}
+				} else if (!mNextPage) {
+					//scrolling inside the list
+					mNextPage = true;
+				}
+			}
+		});
 		gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 			                        int position, long id) {
@@ -182,6 +224,9 @@ public class MovieGridFragment extends Fragment {
 				outState.putParcelableArrayList(PARCELABLE_KEY_TOPRATED,movies);
 				break;
 		}
+		if(search){
+			outState.putParcelableArrayList(PARCELABLE_SEARCH,movies);
+		}
 
 		super.onSaveInstanceState(outState);
 	}
@@ -189,20 +234,30 @@ public class MovieGridFragment extends Fragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_movie_grid, menu);
+		// Associate searchable configuration with the SearchView
+		SearchManager searchManager =
+				(SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+		searchView = (SearchView)menu.findItem(R.id.action_search).getActionView();
+		searchView.setSearchableInfo(
+				searchManager.getSearchableInfo(getActivity().getComponentName()));
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		int id = item.getItemId();
-		if (id == R.id.action_load_more) {
-			loadMoreMovies();
-			return true;
+
+	private void handleIntent(Intent intent) {
+
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			search = true;
+			query = intent.getStringExtra(SearchManager.QUERY);
+			Log.d("SEARCH", query);
+			if(bundle == null || !bundle.containsKey(PARCELABLE_SEARCH)){
+			//use the query to search your data somehow
+			FetchMovieTask search = new FetchMovieTask();
+			search.execute(query,String.valueOf(searchPage));
+			}
+		}else{
+			loadSpinner();
 		}
-
-		return super.onOptionsItemSelected(item);
 	}
-
-
 
 	public interface Callbacks {
 		/**
@@ -296,19 +351,24 @@ public class MovieGridFragment extends Fragment {
 
 	public void loadMoreMovies(){
 		loadMore = true;
-		switch (sortCriteria){
-			case 0:
-				page++;
-				FetchMovieTask fetchMovieTask = new FetchMovieTask();
-				fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
-				break;
-			case 1:
-				page++;
-				FetchMovieTask fetchMovie = new FetchMovieTask();
-				fetchMovie.execute(TOP_RATED,String.valueOf(page));
-				break;
+		if(!search){
+			switch (sortCriteria){
+				case 0:
+					page++;
+					FetchMovieTask fetchMovieTask = new FetchMovieTask();
+					fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
+					break;
+				case 1:
+					page++;
+					FetchMovieTask fetchMovie = new FetchMovieTask();
+					fetchMovie.execute(TOP_RATED,String.valueOf(page));
+					break;
+			}
+		}else{
+			searchPage++;
+			FetchMovieTask searchNextPage = new FetchMovieTask();
+			searchNextPage.execute(query,String.valueOf(searchPage));
 		}
-
 	}
 
 	public void displayFavorites(){
@@ -365,6 +425,7 @@ public class MovieGridFragment extends Fragment {
 				final String SORT_BY = "sort_by";
 				final String PAGE = "page";
 				final String API = "api_key";
+				final String QUERY = "query";
 				Uri builtUri;
 				if(params.length > 2){
 					builtUri = Uri.parse(BASE_URL).buildUpon()
@@ -373,16 +434,23 @@ public class MovieGridFragment extends Fragment {
 							.appendQueryParameter(PAGE, params[2])
 							.appendQueryParameter(API, getString(R.string.api_key))
 							.build();
-				}else{
+				}else if (params.length == 2 && params[0].contains(TOP_RATED)){
 					builtUri = Uri.parse(BASE_URL).buildUpon()
 							.appendEncodedPath(params[0])
 							.appendQueryParameter(PAGE, params[1])
 							.appendQueryParameter(API, getString(R.string.api_key))
 							.build();
+				}else{
+					builtUri = Uri.parse(BASE_URL).buildUpon()
+							.appendEncodedPath(SEARCH)
+							.appendQueryParameter(QUERY,params[0])
+							.appendQueryParameter(PAGE,params[1])
+							.appendQueryParameter(API, getString(R.string.api_key))
+							.build();
 				}
 
 				URL url = new URL(builtUri.toString());
-				Log.v(LOG_TAG, "Built URI " + builtUri.toString());
+				Log.d(LOG_TAG, "Built URI " + builtUri.toString());
 
 				// Create the request to OpenWeatherMap, and open the connection
 				urlConnection = (HttpURLConnection) url.openConnection();
@@ -445,10 +513,10 @@ public class MovieGridFragment extends Fragment {
 			final String POSTER_PATH = "poster_path";
 			JSONObject movieJson = new JSONObject(popMovieJsonStr);
 			JSONArray movieArray = movieJson.getJSONArray(RESULTS);
-			posterPaths = new String[numMovie];
-			if(!loadMore){
-				movies.clear();
 
+			posterPaths = new String[numMovie];
+			if (!loadMore) {
+				movies.clear();
 			}
 			for (int i = 0; i < movieArray.length(); i++) {
 				JSONObject movieData = movieArray.getJSONObject(i);
@@ -456,9 +524,9 @@ public class MovieGridFragment extends Fragment {
 				posterPaths[i] = "http://image.tmdb.org/t/p/w185/" + movieData.getString(POSTER_PATH);
 				Movie movie = new Movie(id, posterPaths[i]);
 				movies.add(movie);
-				Log.v(LOG_TAG, "Poster Paths fetched: " + movie.posterPath);
-				Log.v(LOG_TAG, "IDs fetched: " + movie.id);
 			}
+
+
 			return movies;
 		}
 
@@ -467,7 +535,8 @@ public class MovieGridFragment extends Fragment {
 			super.onPreExecute();
 //			if(!loadMore){
 			progressBar.setVisibility(View.VISIBLE);
-//			} progressBar2.setVisibility(View.VISIBLE);
+//			}
+//			progressBarLoad.setVisibility(View.VISIBLE);
 
 		}
 
@@ -475,8 +544,11 @@ public class MovieGridFragment extends Fragment {
 		protected void onPostExecute(ArrayList<Movie> movies) {
 			super.onPostExecute(movies);
 			progressBar.setVisibility(View.GONE);
-
+			if(movies.isEmpty()){
+				Toast.makeText(getActivity(),R.string.no_search_results,Toast.LENGTH_SHORT).show();
+			}
 			if(loadMore){
+//				progressBarLoad.setVisibility(View.GONE);
 				imageAdapter.notifyDataSetChanged();
 //				gridview.smoothScrollToPosition(mPosition);
 			}else{

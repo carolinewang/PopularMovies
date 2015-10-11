@@ -1,8 +1,10 @@
 package linyingwang.popularmovies;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 public class MainActivity extends ActionBarActivity implements MovieGridFragment.Callbacks{
 	private boolean mTwoPane;
@@ -14,7 +16,9 @@ public class MainActivity extends ActionBarActivity implements MovieGridFragment
 		if (findViewById(R.id.movie_detail_container) != null) {
 			mTwoPane = true;
 		}
+
 	}
+
 
 	@Override
 	public void onItemSelected(long id) {

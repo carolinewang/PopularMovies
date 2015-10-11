@@ -4,7 +4,9 @@
 	<string name="action_favorite">Add to favorite</string>
 	<string name="action_share">Share the Movie</string>
 	<string name="action_load_more">Load More</string>
+	<string name="action_search">Search</string>
 	<string name="action_spinner">Sort by</string>
+	<string name="search_hint">Search for a movie</string>
 	<string name="toast_no_internet">No Internet connection. Please turn on the Internet and reopen the app.</string>
 	<string name="toast_add_to_favorite">Added to My Favorite Movies.</string>
 	<string name="toast_remove_from_favorite">Removed from My Favorite Movies.</string>
@@ -13,6 +15,7 @@
 	<string name="json_string_no_review">"results":[]</string>
 	<string name="no_review">Reviews: \n currently no reviews for this movie.</string>
 	<string name="no_trailer">Trailers: \n currently no trailers for this movie.</string>
+	<string name="no_search_results">No matching search results!</string>
 	<string name="intent_share_msg">Check out this cool movie I found on #Pop Movies App: </string>
 	<string name="intent_share_msg_trailer">Watch the trailer here: </string>
 
@@ -22,6 +25,7 @@
 		<item>My Favorites</item>
 	</string-array>
 	<string name="title_activity_movie_detail">MovieDetail</string>
+	<string name="title_activity_search">Search</string>
 	<string name="title_item_list">Items</string>
 	<string name="title_item_detail">Item Detail</string>
 </resources>

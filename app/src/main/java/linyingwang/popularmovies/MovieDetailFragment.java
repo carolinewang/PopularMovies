@@ -77,7 +77,6 @@ public class MovieDetailFragment extends Fragment {
 	private boolean trailerQuery;
 	private boolean reviewQuery;
 	private boolean movieQuery;
-	private boolean finished;
 	private ProgressBar progressBar;
 	private TrailerAdapter trailerAdapter;
 	private ReviewAdapter  reviewAdapter;
@@ -119,6 +118,7 @@ public class MovieDetailFragment extends Fragment {
 			date = savedInstanceState.getString("date");
 			posterPath = savedInstanceState.getString("posterPath");
 			vote = savedInstanceState.getFloat("rating");
+			reviewTitle.setText(savedInstanceState.getString("reviewTitle"));
 			loadMovieInfo();
 
 			trailers = savedInstanceState.getParcelableArrayList("trailers");
@@ -176,6 +176,7 @@ public class MovieDetailFragment extends Fragment {
 		outState.putString("date", date);
 		outState.putString("posterPath", posterPath);
 		outState.putFloat("rating", vote);
+		outState.putString("reviewTitle",reviewTitle.getText().toString());
 		outState.putParcelableArrayList("trailers", trailers);
 		outState.putParcelableArrayList("reviews",reviews);
 
@@ -315,8 +316,6 @@ public class MovieDetailFragment extends Fragment {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			progressBar.setVisibility(View.VISIBLE);
-			finished = false;
-			Log.d("pre finished", String.valueOf(finished));
 		}
 
 		@Override
@@ -347,7 +346,6 @@ public class MovieDetailFragment extends Fragment {
 					plotSynopsis = movieJson.getString(OVERVIEW);
 					posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
 					Log.d("movie info", movieTitle);
-//				MovieDetail movieDetail = new MovieDetail(movieID,posterPath,movieTitle,date,plotSynopsis,vote);
 					loadMovieInfo();
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -358,7 +356,6 @@ public class MovieDetailFragment extends Fragment {
 					JSONObject trailerJson = new JSONObject(movieInfoJsonStr);
 					Log.d("movieInfoJson trailers",movieInfoJsonStr);
 					JSONArray trailerArray = trailerJson.getJSONArray(RESULTS);
-					if(trailerArray.length()!=0){
 //						trailers = new ArrayList<>();
 						for (int i = 0; i < trailerArray.length(); i++) {
 							JSONObject trailerData = trailerArray.getJSONObject(i);
@@ -371,25 +368,19 @@ public class MovieDetailFragment extends Fragment {
 							Log.d(LOG_TAG, "trailer link fetched: " + trailerLink);
 							Log.d(LOG_TAG, "trailer name fetched: " + trailerName);
 						}
-
 						trailerAdapter.notifyDataSetChanged();
 						Log.d("getMovieTrailer status", String.valueOf(getStatus()));
-					}else{
-						trailerTitle.setText(R.string.no_trailer);
-					}
 
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 			}
 			if(reviewQuery) {
-//				if (!movieInfoJsonStr.contains(getString(R.string.json_string_no_review))) {
 					try {
 						JSONObject reviewJson = new JSONObject(movieInfoJsonStr);
 						Log.d("movieInfoJson review",movieInfoJsonStr);
 						JSONArray reviewArray = reviewJson.getJSONArray(RESULTS);
 						if(reviewArray.length()!=0) {
-//							reviews = new ArrayList<>();
 							for (int i = 0; i < reviewArray.length(); i++) {
 								JSONObject reviewData = reviewArray.getJSONObject(i);
 								String content = reviewData.getString(REVIEW_KEY);
@@ -406,8 +397,6 @@ public class MovieDetailFragment extends Fragment {
 						e.printStackTrace();
 					}
 			}
-			finished = true;
-			Log.d("post finished",String.valueOf(finished));
 			progressBar.setVisibility(View.GONE);
 			}
 
