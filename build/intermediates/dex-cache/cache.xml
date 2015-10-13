@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/exploded-aar/com.github.paolorotolo/expandableheightlistview/1.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="fb983545e8efd14596a3d8e377751f41fa5b2fa3">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/classes-618cb8adb2589f3421179f9b2475b3061fe86f26.jar" />
+    </item>
+
+</items>

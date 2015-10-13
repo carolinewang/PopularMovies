@@ -1,0 +1,18 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+<fragment
+          android:id="@+id/fragment_movie_grid"
+          android:name="linyingwang.popularmovies.MovieGridFragment"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"/>
+          <!--tools:context="linyingwang.popularmovies.MovieGridFragment"-->
+          <!--tools:layout="@android:layout/simple_gallery_item" />-->
+
+    <!--<FrameLayout-->
+        <!--android:id="@+id/movie_container"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--/>-->
+    </LinearLayout><!-- From: file:/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/src/main/res/layout-land/activity_main.xml -->

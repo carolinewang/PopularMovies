@@ -244,19 +244,23 @@ public class MovieGridFragment extends Fragment {
 
 
 	private void handleIntent(Intent intent) {
-
+//	if(isOnline()){
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			search = true;
 			query = intent.getStringExtra(SearchManager.QUERY);
 			Log.d("SEARCH", query);
 			if(bundle == null || !bundle.containsKey(PARCELABLE_SEARCH)){
-			//use the query to search your data somehow
-			FetchMovieTask search = new FetchMovieTask();
-			search.execute(query,String.valueOf(searchPage));
+				//use the query to search your data somehow
+				FetchMovieTask search = new FetchMovieTask();
+				search.execute(query,String.valueOf(searchPage));
 			}
 		}else{
 			loadSpinner();
 		}
+//	}else{
+//		showDialogWhenOffline(spinner);
+//	}
+
 	}
 
 	public interface Callbacks {

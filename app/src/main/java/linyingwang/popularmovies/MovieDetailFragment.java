@@ -206,6 +206,7 @@ public class MovieDetailFragment extends Fragment {
 			Intent intent = new Intent();
 			intent.putExtra(Intent.EXTRA_TEXT, msg);
 			intent.setType("text/plain");
+			intent = Intent.createChooser(intent, "Send as");
 			if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
 				startActivity(intent);
 			}
