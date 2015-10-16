@@ -19,8 +19,6 @@ This ia an Android app that lets you discover and search movies, watch movie tra
 ![movie detail](https://cloud.githubusercontent.com/assets/10457844/10414178/d01f9482-6f93-11e5-9e81-7b4729d43e8b.png)
 ![reviews](https://cloud.githubusercontent.com/assets/10457844/10414179/d0200926-6f93-11e5-978a-e0ca1774559d.png)
 ![watch trailer](https://cloud.githubusercontent.com/assets/10457844/10414176/cfec5e28-6f93-11e5-8556-2623906f85f0.png)
-![offline mode](https://cloud.githubusercontent.com/assets/10457844/10414180/d020d3ba-6f93-11e5-8eb3-1a222f13e095.png)
-Offline mode
 ![my favorite](https://cloud.githubusercontent.com/assets/10457844/10414177/d01ead10-6f93-11e5-95ac-ba1e3ce572b8.png)
 ![search results](https://cloud.githubusercontent.com/assets/10457844/10414175/cfdc2cce-6f93-11e5-94ed-e5c511155732.png)
 search results for "Alice in Wonderland"
