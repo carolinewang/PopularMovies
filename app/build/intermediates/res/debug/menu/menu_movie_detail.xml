@@ -12,7 +12,7 @@
             android:title="@string/action_share"
             android:orderInCategory="3"
             android:icon="@drawable/ic_action_share"
-            app:showAsAction="always"
+            app:showAsAction="ifRoom"
           />
 </menu>
 <!-- From: file:/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/src/main/res/menu/menu_movie_detail.xml -->

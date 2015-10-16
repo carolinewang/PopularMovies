@@ -1327,7 +1327,6 @@ containing a value of this type.
         public static final int poster_placeholder=0x7f02003f;
         public static final int quote_left=0x7f020040;
         public static final int quote_right=0x7f020041;
-        public static final int thumbnail=0x7f020042;
     }
     public static final class id {
         public static final int action_bar=0x7f0e0031;
@@ -1450,12 +1449,11 @@ containing a value of this type.
         public static final int abc_simple_dropdown_hint=0x7f040015;
         public static final int activity_main=0x7f040016;
         public static final int activity_movie_detail=0x7f040017;
-        public static final int activity_search=0x7f040018;
-        public static final int custom_grid_item=0x7f040019;
-        public static final int custom_list_item=0x7f04001a;
-        public static final int fragment_movie_detail=0x7f04001b;
-        public static final int fragment_movie_grid=0x7f04001c;
-        public static final int support_simple_spinner_dropdown_item=0x7f04001d;
+        public static final int custom_grid_item=0x7f040018;
+        public static final int custom_list_item=0x7f040019;
+        public static final int fragment_movie_detail=0x7f04001a;
+        public static final int fragment_movie_grid=0x7f04001b;
+        public static final int support_simple_spinner_dropdown_item=0x7f04001c;
     }
     public static final class menu {
         public static final int menu_movie_detail=0x7f0f0000;
@@ -1482,27 +1480,20 @@ containing a value of this type.
         public static final int abc_shareactionprovider_share_with_application=0x7f07000e;
         public static final int abc_toolbar_collapse_description=0x7f07000f;
         public static final int action_favorite=0x7f070010;
-        public static final int action_load_more=0x7f070011;
-        public static final int action_search=0x7f070012;
-        public static final int action_share=0x7f070013;
-        public static final int action_spinner=0x7f070014;
-        public static final int api_key=0x7f070015;
-        public static final int app_name=0x7f070016;
-        public static final int intent_share_msg=0x7f070017;
-        public static final int intent_share_msg_trailer=0x7f070018;
-        public static final int json_string_no_review=0x7f070019;
-        public static final int no_review=0x7f07001a;
-        public static final int no_search_results=0x7f07001b;
-        public static final int no_trailer=0x7f07001c;
-        public static final int search_hint=0x7f07001d;
-        public static final int title_activity_movie_detail=0x7f07001e;
-        public static final int title_activity_search=0x7f07001f;
-        public static final int title_item_detail=0x7f070020;
-        public static final int title_item_list=0x7f070021;
-        public static final int toast_add_to_favorite=0x7f070022;
-        public static final int toast_no_favorite=0x7f070023;
-        public static final int toast_no_internet=0x7f070024;
-        public static final int toast_remove_from_favorite=0x7f070025;
+        public static final int action_search=0x7f070011;
+        public static final int action_share=0x7f070012;
+        public static final int api_key=0x7f070013;
+        public static final int app_name=0x7f070014;
+        public static final int intent_share_msg=0x7f070015;
+        public static final int intent_share_msg_trailer=0x7f070016;
+        public static final int no_review=0x7f070017;
+        public static final int no_search_results=0x7f070018;
+        public static final int search_hint=0x7f070019;
+        public static final int title_activity_movie_detail=0x7f07001a;
+        public static final int title_activity_search=0x7f07001b;
+        public static final int toast_add_to_favorite=0x7f07001c;
+        public static final int toast_no_favorite=0x7f07001d;
+        public static final int toast_remove_from_favorite=0x7f07001e;
     }
     public static final class style {
         public static final int Animation_AppCompat_DropDownUp=0x7f08006a;

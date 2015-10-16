@@ -12,6 +12,6 @@
             android:title="@string/action_share"
             android:orderInCategory="3"
             android:icon="@drawable/ic_action_share"
-            app:showAsAction="always"
+            app:showAsAction="ifRoom"
           />
 </menu>

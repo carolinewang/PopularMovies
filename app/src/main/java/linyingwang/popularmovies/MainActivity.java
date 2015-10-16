@@ -1,10 +1,8 @@
 package linyingwang.popularmovies;
 
-import android.app.SearchManager;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 
 public class MainActivity extends ActionBarActivity implements MovieGridFragment.Callbacks{
 	private boolean mTwoPane;

@@ -2,11 +2,60 @@
 <items version="2" >
 
     <item
+        jar="/Users/haylin2002/.gradle/caches/modules-2/files-2.1/com.squareup.picasso/picasso/2.5.2/7446d06ec8d4f7ffcc53f1da37c95f200dcb9387/picasso-2.5.2.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="7446d06ec8d4f7ffcc53f1da37c95f200dcb9387">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/picasso-2.5.2-d0d151b2d9a09209e801e3d3fcaf0e3ea4d1c735.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/.gradle/caches/modules-2/files-2.1/com.parse.bolts/bolts-android/1.2.0/6ee2953ccf51ce72b6d548c30c4633b99eb4f9dd/bolts-android-1.2.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="6ee2953ccf51ce72b6d548c30c4633b99eb4f9dd">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/bolts-android-1.2.0-7afc188f9e05608db3eb962eccb2ed00b30d6273.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="d84409890828e07d344a3b9b1da545dba9897b51">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/classes-4acdad0c9a45d0d3afa8e2a37913fa13268666b8.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/libs/Parse-1.10.2.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a859414011ce2c18187acc83319688e6bd340635">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/Parse-1.10.2-e74dcfab96ea16b524c99060d699f5bc833a3086.jar" />
+    </item>
+    <item
         jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/exploded-aar/com.github.paolorotolo/expandableheightlistview/1.0.0/jars/classes.jar"
         jumboMode="false"
         revision="22.0.1"
         sha1="fb983545e8efd14596a3d8e377751f41fa5b2fa3">
         <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/classes-618cb8adb2589f3421179f9b2475b3061fe86f26.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/libs/internal_impl-22.0.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="b5b92f469d515a13d778900f6d50c03d12f35504">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/internal_impl-22.0.0-ba43d628513d87a2d75ac5c4f6dcbfce4fef7853.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/22.0.0/support-annotations-22.0.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="685d0b2c590447e85284ed84712cb363ba04eff8">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/support-annotations-22.0.0-7098536b7effdc175e270265a2935ac498c5921b.jar" />
+    </item>
+    <item
+        jar="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.0.0/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="4e86306289ace4aa0cfec44a05ed2b410d36989d">
+        <dex dex="/Users/haylin2002/Documents/Study_Abroad/Courses/Android/PopularMovies/app/build/intermediates/pre-dexed/debug/classes-2feadb37a75314471b900da8ab3513aac83800d4.jar" />
     </item>
 
 </items>

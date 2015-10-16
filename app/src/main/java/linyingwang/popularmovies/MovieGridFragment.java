@@ -66,6 +66,7 @@ public class MovieGridFragment extends Fragment {
 	private static final String PARCELABLE_KEY_POPULARITY = "Most Popular";
 	private static final String PARCELABLE_KEY_TOPRATED = "Highest Rated";
 	private static final String PARCELABLE_SEARCH = "search results";
+	private static final String PARCELABLE_FAVORITE = "favorites";
 //	public final static String SORT_RATING ="vote_average.desc";
 
 	protected boolean isOnline;
@@ -99,9 +100,13 @@ public class MovieGridFragment extends Fragment {
 				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_POPULARITY);
 			}else if(savedInstanceState.containsKey(PARCELABLE_KEY_TOPRATED)){
 				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_KEY_TOPRATED);
+			}else if(savedInstanceState.containsKey(PARCELABLE_FAVORITE)){
+				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_FAVORITE);
 			}else{
 				movies = savedInstanceState.getParcelableArrayList(PARCELABLE_SEARCH);
 			}
+			page = savedInstanceState.getInt("page");
+			searchPage = savedInstanceState.getInt("searchPage");
 		}else{
 			movies = new ArrayList<Movie>();
 		}
@@ -218,16 +223,20 @@ public class MovieGridFragment extends Fragment {
 		}
 		switch (sortCriteria){
 			case 0:
-				outState.putParcelableArrayList(PARCELABLE_KEY_POPULARITY,movies);
+				outState.putParcelableArrayList(PARCELABLE_KEY_POPULARITY, movies);
 				break;
 			case 1:
 				outState.putParcelableArrayList(PARCELABLE_KEY_TOPRATED,movies);
 				break;
+			case 2:
+				outState.putParcelableArrayList(PARCELABLE_FAVORITE,movies);
+				break;
 		}
 		if(search){
 			outState.putParcelableArrayList(PARCELABLE_SEARCH,movies);
+			outState.putInt("searchPage",searchPage);
 		}
-
+		outState.putInt("page",page);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -267,7 +276,7 @@ public class MovieGridFragment extends Fragment {
 		/**
 		 * Callback for when an item has been selected.
 		 */
-		public void onItemSelected(long id);
+		void onItemSelected(long id);
 	}
 
 	/**
@@ -289,15 +298,15 @@ public class MovieGridFragment extends Fragment {
 		return isOnline;
 	}
 
-	public void showDialogWhenOffline(final Spinner spinner){
+	public void showDialogWhenOffline(){
 		new AlertDialog.Builder(getActivity()).setIcon(android.R.drawable.ic_dialog_alert).setTitle("No Internet Connection")
-				.setMessage("Would you like to view \"My Favorites\" when offline?")
-				.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				.setMessage("Oops, seems you are not connected to Internet. Please retry when you are connected.")
+				.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						spinner.setSelection(2);
+						loadSpinner();
 					}
-				}).setNegativeButton("No", null).show();
+				}).setNegativeButton("OK", null).show();
 	}
 
 	public void loadSpinner() {
@@ -324,7 +333,7 @@ public class MovieGridFragment extends Fragment {
 							fetchMovieTask.execute(DISCOVER,SORT_POPULARITY,String.valueOf(page));
 						}
 						}else {
-							showDialogWhenOffline(spinner);
+							showDialogWhenOffline();
 						}
 						break;
 					case 1:
@@ -335,7 +344,7 @@ public class MovieGridFragment extends Fragment {
 								fetchMovie.execute(TOP_RATED,String.valueOf(page));
 							}
 						}else {
-							showDialogWhenOffline(spinner);
+							showDialogWhenOffline();
 						}
 						break;
 					case 2:
@@ -390,7 +399,6 @@ public class MovieGridFragment extends Fragment {
 							String posterPath = favMovies.get(i).getString("posterPath");
 							Movie movie = new Movie(movieID,posterPath);
 							movies.add(movie);
-							Log.d("fav movie", String.valueOf(movieID));
 						}
 //						imageAdapter.notifyDataSetChanged();
 						imageAdapter = new ImageAdapter(getActivity(),movies);
@@ -407,7 +415,6 @@ public class MovieGridFragment extends Fragment {
 
 	public class FetchMovieTask extends AsyncTask<String, Void, ArrayList<Movie>> {
 
-		private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
 
 		@Override
 		protected ArrayList<Movie> doInBackground(String... params) {
@@ -454,7 +461,6 @@ public class MovieGridFragment extends Fragment {
 				}
 
 				URL url = new URL(builtUri.toString());
-				Log.d(LOG_TAG, "Built URI " + builtUri.toString());
 
 				// Create the request to OpenWeatherMap, and open the connection
 				urlConnection = (HttpURLConnection) url.openConnection();
@@ -483,10 +489,8 @@ public class MovieGridFragment extends Fragment {
 					popMovieJsonStr = null;
 				}
 				popMovieJsonStr = buffer.toString();
-				Log.v(LOG_TAG, "Pop Movie Json String" + popMovieJsonStr);
 
 			} catch (IOException e) {
-				Log.e("PlaceholderFragment", "Error ", e);
 				// If the code didn't successfully get the weather data, there's no point in attempting
 				// to parse it.
 				popMovieJsonStr = null;
@@ -498,7 +502,6 @@ public class MovieGridFragment extends Fragment {
 					try {
 						reader.close();
 					} catch (final IOException e) {
-						Log.e("PlaceholderFragment", "Error closing stream", e);
 					}
 				}
 			}

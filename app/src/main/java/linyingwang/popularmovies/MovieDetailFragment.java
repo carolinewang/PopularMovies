@@ -261,7 +261,6 @@ public class MovieDetailFragment extends Fragment {
 				}
 
 				URL url = new URL(builtUri.toString());
-				Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
 				// Create the request to OpenWeatherMap, and open the connection
 				urlConnection = (HttpURLConnection) url.openConnection();
@@ -290,10 +289,8 @@ public class MovieDetailFragment extends Fragment {
 					movieInfoJsonStr = null;
 				}
 				movieInfoJsonStr = buffer.toString();
-				Log.d(LOG_TAG, "Movie Info Json String" + movieInfoJsonStr);
 
 			} catch (IOException e) {
-				Log.e("PlaceholderFragment", "Error ", e);
 				// If the code didn't successfully get the weather data, there's no point in attempting
 				// to parse it.
 				movieInfoJsonStr = null;
@@ -305,7 +302,6 @@ public class MovieDetailFragment extends Fragment {
 					try {
 						reader.close();
 					} catch (final IOException e) {
-						Log.e("PlaceholderFragment", "Error closing stream", e);
 					}
 				}
 			}
@@ -339,14 +335,12 @@ public class MovieDetailFragment extends Fragment {
 			if(movieQuery) {
 				try {
 					JSONObject movieJson = new JSONObject(movieInfoJsonStr);
-					Log.d("movieInfoJson movie",movieInfoJsonStr);
 					movieTitle = movieJson.getString(TITLE);
 					date = movieJson.getString(DATE);
 					Double ratingValue = movieJson.getDouble(RATING);
 					vote = ratingValue.floatValue();
 					plotSynopsis = movieJson.getString(OVERVIEW);
 					posterPath = "http://image.tmdb.org/t/p/w185/" + movieJson.getString(POSTER_PATH);
-					Log.d("movie info", movieTitle);
 					loadMovieInfo();
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -355,7 +349,6 @@ public class MovieDetailFragment extends Fragment {
 			if(trailerQuery) {
 				try {
 					JSONObject trailerJson = new JSONObject(movieInfoJsonStr);
-					Log.d("movieInfoJson trailers",movieInfoJsonStr);
 					JSONArray trailerArray = trailerJson.getJSONArray(RESULTS);
 //						trailers = new ArrayList<>();
 						for (int i = 0; i < trailerArray.length(); i++) {
@@ -366,11 +359,8 @@ public class MovieDetailFragment extends Fragment {
 							String thumbnail = THUMBNAIL_URL_PREFIX + trailerKey + THUMBNAIL_URL_SUFFIX;
 							Trailer trailer = new Trailer(trailerLink, trailerName, thumbnail);
 							trailers.add(trailer);
-							Log.d(LOG_TAG, "trailer link fetched: " + trailerLink);
-							Log.d(LOG_TAG, "trailer name fetched: " + trailerName);
 						}
 						trailerAdapter.notifyDataSetChanged();
-						Log.d("getMovieTrailer status", String.valueOf(getStatus()));
 
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -379,7 +369,6 @@ public class MovieDetailFragment extends Fragment {
 			if(reviewQuery) {
 					try {
 						JSONObject reviewJson = new JSONObject(movieInfoJsonStr);
-						Log.d("movieInfoJson review",movieInfoJsonStr);
 						JSONArray reviewArray = reviewJson.getJSONArray(RESULTS);
 						if(reviewArray.length()!=0) {
 							for (int i = 0; i < reviewArray.length(); i++) {
@@ -388,7 +377,6 @@ public class MovieDetailFragment extends Fragment {
 								String author = reviewData.getString(REVIEW_AUTHOR_KEY);
 								Review review = new Review(author, content);
 								reviews.add(review);
-								Log.d(LOG_TAG, "review fetched: " + content);
 							}
 							reviewAdapter.notifyDataSetChanged();
 						}else{
@@ -432,7 +420,6 @@ public class MovieDetailFragment extends Fragment {
 				}
 			}
 		});
-		;
 	}
 
 	public void addToFavorite(){
