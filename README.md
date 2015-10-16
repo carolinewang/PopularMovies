@@ -9,7 +9,7 @@ This ia an Android app that lets you discover and search movies, watch movie tra
 <li> Search movies by title </li>
 <li> View movie details including basic info, trailers and reviews, all beautifully displayed </li>
 <li> Watch trailers directly in YouTube App or a web browser</li>
-<li> Add movies to your favorite and view them even when offline </li>
+<li> Add movies to your favorite and view them </li>
 <li> Share a movie and the first movie trailer </li>
 <li> UI tailored for tablet and landscape mode </li>
 </ol>
@@ -31,4 +31,4 @@ search results for "Alice in Wonderland"
 tablet UI - movie detail
 
 # SETUP
-Please insert your own API KEY in the strings.xml.
+Please insert your own TMDB API KEY in the strings.xml.
