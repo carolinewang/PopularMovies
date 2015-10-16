@@ -1,5 +1,6 @@
 # Overview
 This ia an Android app that lets you discover and search movies, watch movie trailers, see reviews and add movies to your favorite. This is the Project 1 & 2 of Unacity's Android Nano Degree I'm taking. 
+*All images and movie information are from tmdb.org. This app uses the TMDb API but is not endorsed or certified by TMDb.
 ![pop movies features graphic](https://cloud.githubusercontent.com/assets/10457844/10471730/bb8ba7ea-71e6-11e5-9443-3bb96435db85.png)
 # Features:
 <ol>
@@ -8,7 +9,7 @@ This ia an Android app that lets you discover and search movies, watch movie tra
 <li> Search movies by title </li>
 <li> View movie details including basic info, trailers and reviews, all beautifully displayed </li>
 <li> Watch trailers directly in YouTube App or a web browser</li>
-<li> Add movies to your favorite and view them even when offline </li>
+<li> Add movies to your favorite and view them </li>
 <li> Share a movie and the first movie trailer </li>
 <li> UI tailored for tablet and landscape mode </li>
 </ol>
@@ -18,8 +19,6 @@ This ia an Android app that lets you discover and search movies, watch movie tra
 ![movie detail](https://cloud.githubusercontent.com/assets/10457844/10414178/d01f9482-6f93-11e5-9e81-7b4729d43e8b.png)
 ![reviews](https://cloud.githubusercontent.com/assets/10457844/10414179/d0200926-6f93-11e5-978a-e0ca1774559d.png)
 ![watch trailer](https://cloud.githubusercontent.com/assets/10457844/10414176/cfec5e28-6f93-11e5-8556-2623906f85f0.png)
-![offline mode](https://cloud.githubusercontent.com/assets/10457844/10414180/d020d3ba-6f93-11e5-8eb3-1a222f13e095.png)
-Offline mode
 ![my favorite](https://cloud.githubusercontent.com/assets/10457844/10414177/d01ead10-6f93-11e5-95ac-ba1e3ce572b8.png)
 ![search results](https://cloud.githubusercontent.com/assets/10457844/10414175/cfdc2cce-6f93-11e5-94ed-e5c511155732.png)
 search results for "Alice in Wonderland"
@@ -30,4 +29,4 @@ search results for "Alice in Wonderland"
 tablet UI - movie detail
 
 # SETUP
-Please insert your own API KEY in the strings.xml.
+Please insert your own TMDB API KEY in the strings.xml.
