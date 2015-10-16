@@ -251,6 +251,18 @@ public class MovieGridFragment extends Fragment {
 				searchManager.getSearchableInfo(getActivity().getComponentName()));
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+
+		if (id == R.id.about) {
+			Intent intent = new Intent(getActivity(), About.class);
+			startActivity(intent);
+			return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
 
 	private void handleIntent(Intent intent) {
 //	if(isOnline()){

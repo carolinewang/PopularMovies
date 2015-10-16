@@ -44,6 +44,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="linyingwang.popularmovies.MainActivity" />
         </activity>
+        <activity
+            android:name="linyingwang.popularmovies.About"
+            android:label="@string/title_activity_about" >
+        </activity>
     </application>
 
 </manifest>

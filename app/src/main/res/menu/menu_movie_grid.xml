@@ -9,5 +9,9 @@
 		android:orderInCategory="1"
 		app:showAsAction="always"
 	    app:actionViewClass="android.support.v7.widget.SearchView"/>
-
+	<item
+		android:id ="@+id/about"
+	    android:title="About"
+	    android:orderInCategory="6"
+	    app:showAsAction="never"/>
 </menu>
