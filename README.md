@@ -1,5 +1,6 @@
 # Overview
 This ia an Android app that lets you discover and search movies, watch movie trailers, see reviews and add movies to your favorite. This is the Project 1 & 2 of Unacity's Android Nano Degree I'm taking. 
+![pop movies features graphic](https://cloud.githubusercontent.com/assets/10457844/10471730/bb8ba7ea-71e6-11e5-9443-3bb96435db85.png)
 # Features:
 <ol>
 <li> Discover most popular and highest rated movies; movies are displayed in a beautiful grid layout.</li>
