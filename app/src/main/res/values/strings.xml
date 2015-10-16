@@ -8,7 +8,7 @@
 	<string name="toast_add_to_favorite">Added to My Favorite Movies.</string>
 	<string name="toast_remove_from_favorite">Removed from My Favorite Movies.</string>
 	<string name="toast_no_favorite">You have not added any favorite movies yet!</string>
-	<string name="api_key">81cdc16066eb01e599562bc01d19e5a4</string>
+	<string name="api_key">INSERT YOUR TMDB KEY</string>
 	<string name="no_review">Reviews: \n currently no reviews for this movie.</string>
 	<string name="no_search_results">No matching search results!</string>
 	<string name="intent_share_msg">Check out this cool movie I found on #Pop Movies App: </string>
